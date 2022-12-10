@@ -127,7 +127,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BTree.cpp" />
+    <ClCompile Include="BTreePage.cpp" />
+    <ClCompile Include="BtreeRecord.cpp" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BTree.h" />
+    <ClInclude Include="BTreePage.h" />
+    <ClInclude Include="BTreeRecord.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
