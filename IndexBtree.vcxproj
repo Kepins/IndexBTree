@@ -129,7 +129,7 @@
   <ItemGroup>
     <ClCompile Include="BTree.cpp" />
     <ClCompile Include="BTreePage.cpp" />
-    <ClCompile Include="BTreePageBufferManager.cpp" />
+    <ClCompile Include="BTreePageCache.cpp" />
     <ClCompile Include="BtreeRecord.cpp" />
     <ClCompile Include="DiskFile.cpp" />
     <ClCompile Include="main.cpp" />
@@ -137,7 +137,7 @@
   <ItemGroup>
     <ClInclude Include="BTree.h" />
     <ClInclude Include="BTreePage.h" />
-    <ClInclude Include="BTreePageBufferManager.h" />
+    <ClInclude Include="BTreePageCache.h" />
     <ClInclude Include="BTreeRecord.h" />
     <ClInclude Include="DiskFile.h" />
   </ItemGroup>

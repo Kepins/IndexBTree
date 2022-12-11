@@ -1,6 +1,6 @@
-#include "BTreePageBufferManager.h"
+#include "BTreePageCache.h"
 
-BTreePageBufferManager::BTreePageBufferManager(int32_t pages_cache, int32_t page_size, int32_t max_elements)
+BTreePageCache::BTreePageCache(int32_t pages_cache, int32_t page_size, int32_t max_elements)
 	: 
 	PAGE_SIZE(page_size), 
 	MAX_ELEMENTS(max_elements)
@@ -19,7 +19,7 @@ BTreePageBufferManager::BTreePageBufferManager(int32_t pages_cache, int32_t page
 	this->idx_pages_data = 0;
 }
 
-BTreePageBufferManager::~BTreePageBufferManager()
+BTreePageCache::~BTreePageCache()
 {
 	// Delete array with flags
 	delete[] this->pages_flags;
@@ -31,7 +31,7 @@ BTreePageBufferManager::~BTreePageBufferManager()
 	delete[] this->pages_data;
 }
 
-const BTreePage* BTreePageBufferManager::getPage(int64_t address) {
+const BTreePage* BTreePageCache::getPage(int64_t address) {
 	std::map<int64_t, BTreePage*>::iterator it = pages_map.find(address);
 	if (it != pages_map.end()) {
 		// Return pointer to BTreePage of given address

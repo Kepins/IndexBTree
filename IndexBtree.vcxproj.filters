@@ -27,7 +27,7 @@
     <ClCompile Include="BtreeRecord.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BTreePageBufferManager.cpp">
+    <ClCompile Include="BTreePageCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DiskFile.cpp">
@@ -44,7 +44,7 @@
     <ClInclude Include="BTreeRecord.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BTreePageBufferManager.h">
+    <ClInclude Include="BTreePageCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DiskFile.h">

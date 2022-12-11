@@ -6,7 +6,7 @@
 
 #include "BTreePage.h"
 
-class BTreePageBufferManager
+class BTreePageCache
 {
 private:
 	const int32_t PAGE_SIZE;
@@ -25,8 +25,8 @@ private:
 	int32_t idx_pages_data;
 
 public:
-	BTreePageBufferManager(int32_t pages_cache, int32_t page_size, int32_t max_elements);
-	~BTreePageBufferManager();
+	BTreePageCache(int32_t pages_cache, int32_t page_size, int32_t max_elements);
+	~BTreePageCache();
 
 	const BTreePage* getPage(int64_t address);
 	void flushPages();
