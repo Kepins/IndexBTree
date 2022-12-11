@@ -131,6 +131,7 @@
     <ClCompile Include="BTreePage.cpp" />
     <ClCompile Include="BTreePageBufferManager.cpp" />
     <ClCompile Include="BtreeRecord.cpp" />
+    <ClCompile Include="DiskFile.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -138,6 +139,7 @@
     <ClInclude Include="BTreePage.h" />
     <ClInclude Include="BTreePageBufferManager.h" />
     <ClInclude Include="BTreeRecord.h" />
+    <ClInclude Include="DiskFile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
