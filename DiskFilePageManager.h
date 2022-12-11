@@ -4,11 +4,9 @@
 #include "DiskFile.h"
 #include <list>
 
-class DiskFilePageManager
+class DiskFilePageManager : private DiskFile
 {
 private:
-	// Class that simulates disk accesses
-	DiskFile diskFile;
 	// Size of page
 	int32_t BLOCK_SIZE;
 	// List of returned pages
@@ -30,9 +28,9 @@ public:
 	void write_page_content(int64_t page_number, char* buffer);
 
 	// Counters
-	int64_t get_counter_writes() { return diskFile.get_counter_reads(); }
-	int64_t get_counter_reads() { return diskFile.get_counter_writes(); }
-	int64_t get_counter_all_op() { return diskFile.get_counter_all_op(); }
+	using DiskFile::get_counter_writes;
+	using DiskFile::get_counter_reads;
+	using DiskFile::get_counter_all_op;
 };
 
 #endif

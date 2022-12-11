@@ -1,7 +1,7 @@
 #include "DiskFilePageManager.h"
 
 DiskFilePageManager::DiskFilePageManager(const std::string& filePath, int32_t block_size) :
-	diskFile(filePath, block_size),
+	DiskFile(filePath, block_size),
 	next_page(0),
 	BLOCK_SIZE(block_size)
 {
@@ -36,11 +36,11 @@ void DiskFilePageManager::return_page(int64_t page_number)
 void DiskFilePageManager::get_page_content(int64_t page_number, char* buffer)
 {
 	// Read one page
-	diskFile.read(page_number * BLOCK_SIZE, buffer, BLOCK_SIZE);
+	DiskFile::read(page_number * BLOCK_SIZE, buffer, BLOCK_SIZE);
 }
 
 void DiskFilePageManager::write_page_content(int64_t page_number, char* buffer)
 {
 	// Write one page
-	diskFile.write(page_number * BLOCK_SIZE, buffer, BLOCK_SIZE);
+	DiskFile::write(page_number * BLOCK_SIZE, buffer, BLOCK_SIZE);
 }
