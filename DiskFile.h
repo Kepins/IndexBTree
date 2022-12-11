@@ -20,7 +20,7 @@ private:
 
 public:
 	DiskFile(const std::string& filePath, int32_t block_size = 4096);
-	~DiskFile();
+	virtual ~DiskFile();
 
 	void read(int64_t address, char* buffer, int32_t size);
 	void write(int64_t address, char* buffer, int32_t size);
