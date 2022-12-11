@@ -1,9 +1,8 @@
 #include "DiskFilePageManager.h"
 
-DiskFilePageManager::DiskFilePageManager(const std::string& filePath, int64_t max_pages, int32_t block_size) :
-	diskFile(filePath, max_pages, block_size),
+DiskFilePageManager::DiskFilePageManager(const std::string& filePath, int32_t block_size) :
+	diskFile(filePath, block_size),
 	next_page(0),
-	MAX_PAGES(max_pages),
 	BLOCK_SIZE(block_size)
 {
 }
@@ -24,12 +23,8 @@ int64_t DiskFilePageManager::get_new_page_number()
 		return page;
 	}
 
-	// Check if more pages can be given
-	if (next_page + 1 > MAX_PAGES) {
-		throw "No new pages!";
-	}
-	// Return incremented page number
-	return ++next_page;
+	// Return and increment page number
+	return next_page++;
 }
 
 void DiskFilePageManager::return_page(int64_t page_number)

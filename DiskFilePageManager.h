@@ -9,8 +9,6 @@ class DiskFilePageManager
 private:
 	// Class that simulates disk accesses
 	DiskFile diskFile;
-	// Number of pages that can be handled
-	int64_t MAX_PAGES;
 	// Size of page
 	int32_t BLOCK_SIZE;
 	// List of returned pages
@@ -18,7 +16,7 @@ private:
 	// Number of next page
 	int64_t next_page;
 public:
-	DiskFilePageManager(const std::string& filePath, int64_t max_pages ,int32_t block_size = 4096);
+	DiskFilePageManager(const std::string& filePath, int32_t block_size = 4096);
 	~DiskFilePageManager();
 
 	// Give unused page
@@ -30,6 +28,11 @@ public:
 	void get_page_content(int64_t page_number, char* buffer);
 	// Write one page
 	void write_page_content(int64_t page_number, char* buffer);
+
+	// Counters
+	int64_t get_counter_writes() { return diskFile.get_counter_reads(); }
+	int64_t get_counter_reads() { return diskFile.get_counter_writes(); }
+	int64_t get_counter_all_op() { return diskFile.get_counter_all_op(); }
 };
 
 #endif
