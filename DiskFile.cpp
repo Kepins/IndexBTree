@@ -42,7 +42,7 @@ void DiskFile::read(int64_t address , char* buffer, int32_t size)
 	file.read(buffer, size);
 }
 
-void DiskFile::write(int64_t address, char* buffer, int32_t size)
+void DiskFile::write(int64_t address, const char* buffer, int32_t size)
 {
 	// Address of last byte that is requested to be written
 	int64_t last_address = address + size - 1;

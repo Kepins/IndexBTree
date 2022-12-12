@@ -15,6 +15,9 @@ class BTreePage
 	
 	const int32_t HEADER_OFFSET = sizeof(int64_t) + sizeof(int32_t);
 
+	// Has page been modified
+	bool dirty = false;
+
 	// ------ PAGE CONTENT ------
 	
 	// Bytes of the page
@@ -26,13 +29,22 @@ class BTreePage
 
 
 public:
-	
+	//BTreePage() :MAX_RECORDS(0), PAGE_SIZE(0) {};
 	BTreePage(int32_t page_size, int32_t max_records);
 	~BTreePage();
 	
 
-	// Return PAGE_SIZE bytes that represent page
-	const char* get_page_content() { return content; };
+	// Return true is page has been modified
+	bool isDirty() { return dirty; }
+
+	// Reset dirty
+	void resetDirty() { this->dirty = false; }
+
+	// Return pointer to PAGE_SIZE bytes that represent page
+	const char* getPageContent() const { return content; };
+
+	// Set page content to bytes
+	void setPageContent(const char* bytes);
 
 	// Get parent page address
 	int64_t getParent();

@@ -39,7 +39,7 @@ void DiskFilePageManager::get_page_content(int64_t page_number, char* buffer)
 	DiskFile::read(page_number * BLOCK_SIZE, buffer, BLOCK_SIZE);
 }
 
-void DiskFilePageManager::write_page_content(int64_t page_number, char* buffer)
+void DiskFilePageManager::write_page_content(int64_t page_number, const char* buffer)
 {
 	// Write one page
 	DiskFile::write(page_number * BLOCK_SIZE, buffer, BLOCK_SIZE);

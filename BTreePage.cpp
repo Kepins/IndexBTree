@@ -62,6 +62,12 @@ void BTreePage::setRecord(int32_t idx, BTreeRecord BTrecord) {
 	], &BTrecord.key, sizeof(BTrecord));
 }
 
+void BTreePage::setPageContent(const char* bytes)
+{
+	memcpy(this->content, bytes, PAGE_SIZE);
+	this->dirty = true;
+}
+
 int64_t BTreePage::getParent()
 {
 	return *(int64_t*)&content[

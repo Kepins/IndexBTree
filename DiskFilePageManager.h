@@ -25,7 +25,7 @@ public:
 	// Read one page
 	void get_page_content(int64_t page_number, char* buffer);
 	// Write one page
-	void write_page_content(int64_t page_number, char* buffer);
+	void write_page_content(int64_t page_number, const char* buffer);
 
 	// Counters
 	using DiskFile::get_counter_writes;

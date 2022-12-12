@@ -23,7 +23,7 @@ public:
 	virtual ~DiskFile();
 
 	void read(int64_t address, char* buffer, int32_t size);
-	void write(int64_t address, char* buffer, int32_t size);
+	void write(int64_t address, const char* buffer, int32_t size);
 
 	int64_t get_counter_writes() { return counter_writes; }
 	int64_t get_counter_reads() { return counter_reads; }
