@@ -10,6 +10,6 @@ const std::string FILES_DIR = "diskFiles\\";
 
 int main()
 {
-    BTree btree(FILES_DIR + "btree", PAGE_SIZE, TREE_ORDER, 5);
+    BTree btree(FILES_DIR + "btree", PAGE_SIZE, TREE_ORDER, 3);
     return 0;
 }

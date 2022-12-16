@@ -29,8 +29,17 @@ class BTreePage
 
 
 public:
-	//BTreePage() :MAX_RECORDS(0), PAGE_SIZE(0) {};
+	// Constructor
 	BTreePage(int32_t page_size, int32_t max_records);
+	// Copy constructor
+	BTreePage(const BTreePage& src);
+	// Move constructor
+	BTreePage(BTreePage&& t);
+	// Assign operator
+	BTreePage& operator=(const BTreePage& oth);
+	// Assign move operator
+	BTreePage& operator=(BTreePage&& t);
+	// Destructor
 	~BTreePage();
 	
 
@@ -43,8 +52,11 @@ public:
 	// Return pointer to PAGE_SIZE bytes that represent page
 	const char* getPageContent() const { return content; };
 
-	// Set page content to bytes
-	void setPageContent(const char* bytes);
+	// Copy page content to bytes
+	void copyPageContent(const char* bytes);
+
+	// Move page content
+	void movePageContent(char* bytes);
 
 	// Get parent page address
 	int64_t getParent();

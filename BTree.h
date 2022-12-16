@@ -26,11 +26,11 @@ public:
 	~BTree();
 
 	// Inserts record
-	int insert(const BTreeRecord* record);
+	int insert(const BTreeRecord& record);
 	// Uses key to find record and fills address
-	int get_record_addr(BTreeRecord* record);
+	int get_record_addr(BTreeRecord& record);
 	// Uses only key from record and removes record with same key
-	int remove(const BTreeRecord* record);
+	int remove(const BTreeRecord& record);
 	// Prints tree
 	void print(std::ostream& os);
 };
