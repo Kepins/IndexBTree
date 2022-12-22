@@ -44,7 +44,7 @@ public:
 	
 
 	// Return true is page has been modified
-	bool isDirty() { return dirty; }
+	bool isDirty() const { return dirty; }
 
 	// Reset dirty
 	void resetDirty() { this->dirty = false; }
@@ -59,25 +59,25 @@ public:
 	void movePageContent(char* bytes);
 
 	// Get parent page address
-	int64_t getParent();
+	int64_t getParent() const;
 
 	// Set parent page address
 	void setParent(int64_t parent_address);
 
 	// Get size
-	int32_t getSize();
+	int32_t getSize() const;
 
 	// Set size
 	void setSize(int32_t size);
 
 	// Get address of child page
-	int64_t getAddress(int32_t idx);
+	int64_t getAddress(int32_t idx) const;
 
 	// Set address of child page
 	void setAddress(int32_t idx, int64_t address);
 	
 	// Get record
-	BTreeRecord getRecord(int32_t idx);
+	BTreeRecord getRecord(int32_t idx) const;
 
 	// Set record
 	void setRecord(int32_t idx, BTreeRecord BTrecord);

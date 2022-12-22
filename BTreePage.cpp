@@ -69,7 +69,7 @@ BTreePage::~BTreePage() {
 	}
 }
 
-int64_t BTreePage::getAddress(int32_t idx)
+int64_t BTreePage::getAddress(int32_t idx) const
 {
 	return *(int64_t*)&content[
 		HEADER_OFFSET					// Size of header
@@ -87,7 +87,7 @@ void BTreePage::setAddress(int32_t idx, int64_t address) {
 	], &address, sizeof(address));
 }
 
-BTreeRecord BTreePage::getRecord(int32_t idx)
+BTreeRecord BTreePage::getRecord(int32_t idx) const
 {
 	// Get pointer to bytes
 	const char* bytes = &content[
@@ -121,7 +121,7 @@ void BTreePage::movePageContent(char* bytes) {
 	this->content = bytes;
 }
 
-int64_t BTreePage::getParent()
+int64_t BTreePage::getParent() const
 {
 	return *(int64_t*)&content[
 		0
@@ -136,7 +136,8 @@ void BTreePage::setParent(int64_t parent_address)
 	], &parent_address, sizeof(parent_address));
 }
 
-int32_t BTreePage::getSize() {
+int32_t BTreePage::getSize() const 
+{
 	return *(int32_t*)&content[
 		sizeof(int64_t)
 	];
