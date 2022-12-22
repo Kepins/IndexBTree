@@ -36,13 +36,22 @@ private:
 	ReturnValue search(BTreeRecord& record, int64_t pageNum, int64_t* pageNumEnd);
 
 	// Returns the idx where key could be
-	static int32_t bisection(const BTreePage& page, int64_t key);
+	static int32_t binarySearch(const BTreePage& page, int64_t key);
 
-	// Insert into this page
-	ReturnValue insertIntoPage(int64_t pageNum, const BTreeRecord& record);
+	// We know that record is not in the tree
+	void insertIntoPage(int64_t pageNum, const BTreeRecord& record);
+
+	// Try to insert into this specific page without spliting and compenstaion
+	ReturnValue simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& record);
 
 	// Try compenation
 	ReturnValue compensate(int64_t pageNum);
+
+	// Do compensate (it is possible)
+	void doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent);
+
+	// Do split
+	void split(int64_t pageNum, const BTreeRecord& record);
 public:
 	BTree(const std::string& filePath, int32_t page_size, int32_t order, int32_t cache_size = 30);
 	~BTree();
