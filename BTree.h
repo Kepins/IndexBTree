@@ -39,10 +39,10 @@ private:
 	static int32_t binarySearch(const BTreePage& page, int64_t key);
 
 	// We know that record is not in the tree
-	void insertIntoPage(int64_t pageNum, const BTreeRecord& record);
+	void insertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
 
 	// Try to insert into this specific page without spliting and compenstaion
-	ReturnValue simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& record);
+	ReturnValue simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
 
 	// Try compenation
 	ReturnValue compensate(int64_t pageNum);

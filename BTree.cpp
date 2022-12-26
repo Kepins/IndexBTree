@@ -34,7 +34,7 @@ int32_t BTree::binarySearch(const BTreePage& page, int64_t key) {
 	return idx;
 }
 
-ReturnValue BTree::simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& record)
+ReturnValue BTree::simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum)
 {
 	// Get page that search ended on
 	BTreePage page = pageCache.getPage(pageNum);
@@ -49,16 +49,19 @@ ReturnValue BTree::simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& reco
 			pos++;
 		}
 
+		// Set ptr to page after last record
+		page.setAddress(page.getSize() + 1, page.getAddress(page.getSize()));
+
 		// Move everything after one position further
 		for (int32_t i = page.getSize(); i > pos; --i) {
 			// Write to pos i+1 record from pos i
 			page.setRecord(i, page.getRecord(i - 1));
+			page.setAddress(i, page.getAddress(i - 1));
 		}
-		// Set ptr to address after last record to NIL
-		page.setAddress(page.getSize() + 1, NIL);
 
 		// After moving everything inser record to proper position
 		page.setRecord(pos, record);
+		page.setAddress(pos, childPageNum);
 
 		// Increase number of elements in this page
 		page.setSize(page.getSize() + 1);
@@ -225,9 +228,9 @@ ReturnValue BTree::search(BTreeRecord& record, int64_t pageNum, int64_t* pageNum
 	return search(record, pageNumNext, pageNumEnd);
 }
 
-void BTree::insertIntoPage(int64_t pageNum, const BTreeRecord& record) {
+void BTree::insertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum) {
 	// Try to simply insert record to the page
-	if (simpleInsertIntoPage(pageNum, record) == ReturnValue::OK) {
+	if (simpleInsertIntoPage(pageNum, record, childPageNum) == ReturnValue::OK) {
 		// Return if it was successful
 		return;
 	}
@@ -236,7 +239,7 @@ void BTree::insertIntoPage(int64_t pageNum, const BTreeRecord& record) {
 	// Try to compensate
 	if (compensate(pageNum) == ReturnValue::OK) {
 		// If it was possible
-		simpleInsertIntoPage(pageNum, record);
+		simpleInsertIntoPage(pageNum, record, childPageNum);
 
 		// Return if this was successful
 		return;
@@ -269,7 +272,7 @@ ReturnValue BTree::insert(const BTreeRecord& record) {
 		return ReturnValue::ALREADY_EXISTS;
 	}
 	// Try simple insert, try compensation and if neccessary do a split
-	insertIntoPage(pageNumEnd, record);
+	insertIntoPage(pageNumEnd, record, NIL);
 	return ReturnValue::OK;
 }
 
