@@ -15,6 +15,7 @@ int main()
     btree.insert(BTreeRecord(80, 0x00000033));
     btree.insert(BTreeRecord(120, 0x00001042));
     btree.insert(BTreeRecord(1256, 0x00000000));
+    btree.insert(BTreeRecord(1251, 0x00000100));
     BTreeRecord find(1256, 0);
     btree.search(find);
     find = BTreeRecord(120, 0);
@@ -24,6 +25,8 @@ int main()
     find = BTreeRecord(99, 0);
     btree.search(find);
     find = BTreeRecord(100, 0);
+    btree.search(find);
+    find = BTreeRecord(1251, 0);
     btree.search(find);
 
     return 0;

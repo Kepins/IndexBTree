@@ -51,7 +51,7 @@ private:
 	void doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent);
 
 	// Do split
-	void split(int64_t pageNum, const BTreeRecord& record);
+	void split(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
 public:
 	BTree(const std::string& filePath, int32_t page_size, int32_t order, int32_t cache_size = 30);
 	~BTree();
