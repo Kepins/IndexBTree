@@ -193,45 +193,63 @@ void BTree::split(int64_t pageNum, const BTreeRecord& record, int64_t childPageN
 	// All ptr that are relevant
 	std::vector<int64_t>children;
 
+	// Read all records and children to vectors
 	for (int32_t i = 0; i < oldPage.getSize(); ++i) {
 		records.push_back(oldPage.getRecord(i));
 		children.push_back(oldPage.getAddress(i));
 	}
+	// Add last child
 	children.push_back(oldPage.getAddress(oldPage.getSize()));
 
+	// Find where new record should be in vector
 	int32_t idxNew = 0;
 	while (records[idxNew].key < record.key) {
 		++idxNew;
 	}
+	// Insert new record to vector
 	records.insert(records.begin() + idxNew, record);
+	// Insert corresponding childPageNum
 	children.insert(children.begin() + idxNew, childPageNum);
 
 	// Idx of record that goes to the parent
 	int32_t midIdx = records.size() / 2;
 
+	// Write records < records[midIdx] to new page
 	for (int32_t i = 0; i < midIdx; ++i) {
 		newPage.setRecord(i, records[i]);
 		newPage.setAddress(i, children[i]);
 	}
+	// Write last child to new page
 	newPage.setAddress(midIdx, children[midIdx]);
+	// Set proper size in new page
 	newPage.setSize(midIdx);
 
+	// Write records > records[midIdx] to old page
 	for (int32_t i = midIdx + 1, k = 0; i < records.size(); ++i, ++k) {
 		oldPage.setRecord(k, records[i]);
 		oldPage.setAddress(k, children[i]);
 	}
+	// Write last child to old page
 	oldPage.setAddress(records.size() - midIdx - 1, children[records.size()]);
+	// Set proper size in old page
 	oldPage.setSize(records.size() - midIdx - 1);
 
+	// Set parent of new page to the parent of old page
 	newPage.setParent(oldPage.getParent());
 
+	// Save changes
 	pageCache.setPage(pageNum, oldPage);
 	pageCache.setPage(newPageNum, newPage);
+
+	// Check if page that is not the root is being split
 	if (oldPage.getParent() != NIL) {
+		// Old page is not the root
+
+		// Insert records[midIdx] to parent
 		insertIntoPage(oldPage.getParent(), records[midIdx], newPageNum);
 		return;
 	}
-
+	// Create new root
 	root_addr = pageCache.getNewPageNumber();
 	BTreePage root_page = pageCache.getPage(root_addr);
 	root_page.setParent(NIL);
@@ -242,7 +260,6 @@ void BTree::split(int64_t pageNum, const BTreeRecord& record, int64_t childPageN
 	pageCache.setPage(root_addr, root_page);
 	oldPage.setParent(root_addr);
 	height++;
-	
 }
 
 ReturnValue BTree::search(BTreeRecord& record, int64_t pageNum, int64_t* pageNumEnd) {
