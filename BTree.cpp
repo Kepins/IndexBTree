@@ -41,7 +41,7 @@ int32_t BTree::binarySearch(const BTreePage& page, int64_t key) {
 	int32_t idx = (l + r) / 2;
 
 	while (l < r) {
-		int32_t keyAtIdx = page.getRecord(idx).key;
+		int64_t keyAtIdx = page.getRecord(idx).key;
 		if (keyAtIdx == key) {
 			return idx;
 		}
