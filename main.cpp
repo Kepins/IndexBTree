@@ -29,5 +29,16 @@ int main()
     find = BTreeRecord(1251, 0);
     btree.search(find);
 
+    btree.getCounterWrites();
+    btree.getCounterWritesIfFlushed();
+    btree.getCounterReads();
+    btree.getCounterAllOp();
+    btree.getCounterAllOpIfFlushed();
+    btree.print(std::cout);
+    btree.getCounterWrites();
+    btree.getCounterWritesIfFlushed();
+    btree.getCounterReads();
+    btree.getCounterAllOp();
+    btree.getCounterAllOpIfFlushed();
     return 0;
 }

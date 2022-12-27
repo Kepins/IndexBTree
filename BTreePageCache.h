@@ -31,6 +31,11 @@ private:
 	// Idx which page to replace in pages_data
 	int32_t idx_pages_data;
 
+	// Number of read accesses that should be excluded
+	int64_t excludeReadAccesses = 0;
+
+	int64_t getHowManyDirty();
+
 	// Removes entry with value of idx from map
 	int64_t RemovePageFromMap(int32_t idx);
 
@@ -49,6 +54,9 @@ public:
 	// Destructor
 	~BTreePageCache();
 
+	// Returns page and adds acceeses to 'excludeAccesses' that are later substracted
+	BTreePage getPageExcludeAccesses(int64_t page_number);
+
 	// Get page content
 	BTreePage getPage(int64_t page_number);
 	// Set page content
@@ -62,8 +70,10 @@ public:
 	int64_t getNewPageNumber() { return pageManager.get_new_page_number(); }
 	// Counters
 	int64_t get_counter_writes() { return pageManager.get_counter_writes(); }
-	int64_t get_counter_reads() { return pageManager.get_counter_reads(); }
-	int64_t get_counter_all_op() { return pageManager.get_counter_all_op(); }
+	int64_t get_counter_reads() { return pageManager.get_counter_reads() - excludeReadAccesses; }
+	int64_t get_counter_all_op() { return pageManager.get_counter_all_op() - excludeReadAccesses; }
+	int64_t get_counter_writes_after_flush();
+	int64_t get_counter_all_op_after_flush();
 };
 
 #endif

@@ -29,6 +29,57 @@ BTreePageCache::~BTreePageCache()
 	}
 }
 
+BTreePage BTreePageCache::getPageExcludeAccesses(int64_t page_number)
+{
+	std::map<int64_t, int32_t>::iterator it = pages_map.find(page_number);
+	if (it != pages_map.end()) {
+		// Page is in cache
+
+		// Return entry in pages_data contains page
+		return *pages_data[it->second];
+	}
+	int64_t before_counter = pageManager.get_counter_all_op();
+	// Set content
+	char* content = new char[PAGE_SIZE];
+	// Read from file
+	pageManager.get_page_content(page_number, content);
+	// Create page
+	BTreePage page(PAGE_SIZE, MAX_ELEMENTS);
+	// Page will free allocated memory
+	page.movePageContent(content);
+
+	// Add number of accesses to counter
+	excludeReadAccesses += (pageManager.get_counter_all_op() - before_counter);
+	// Return page
+	return page;
+}
+
+int64_t BTreePageCache::getHowManyDirty()
+{
+	// Will store how many pages in cache are dirty
+	int64_t howManyDirty = 0;
+
+	std::map<int64_t, int32_t>::iterator it = pages_map.begin();
+	// Iterate over every entry in map
+	while (it != pages_map.end()) {
+		// Page number of entry in map
+		int64_t page_number = it->first;
+		// Idx in pages_data of entry in map
+		int32_t idx = it->second;
+		// Check if page has been modified
+		if (pages_data[idx]->isDirty()) {
+			// If page was modified
+
+			// Increment howManyDirty
+			++howManyDirty;
+		}
+		// Get next entry
+		it++;
+	}
+	// Return how many dirty pages are in cache
+	return howManyDirty;
+}
+
 int64_t BTreePageCache::RemovePageFromMap(int32_t idx)
 {
 	std::map<int64_t, int32_t>::iterator it = pages_map.begin();
@@ -192,5 +243,17 @@ void BTreePageCache::flushPages()
 		// Get next entry
 		it++;
 	}
+}
+
+int64_t BTreePageCache::get_counter_writes_after_flush()
+{
+	// Return number of actual writes and how many would happen if flush was called
+	return pageManager.get_counter_writes() + getHowManyDirty();
+}
+
+int64_t BTreePageCache::get_counter_all_op_after_flush()
+{
+	// Return number of actual operations and how many would happen if flush was called
+	return pageManager.get_counter_all_op() + getHowManyDirty();
 }
 

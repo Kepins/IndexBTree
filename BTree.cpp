@@ -13,6 +13,28 @@ BTree::~BTree()
 {
 }
 
+void BTree::printPage(std::ostream& os, const BTreePage& page, int64_t selfPageNum)
+{
+	os << "<" << selfPageNum <<">[-";
+	for (int32_t i = 0; i < page.getSize(); i++) {
+		int64_t addr = page.getAddress(i);
+		BTreeRecord record = page.getRecord(i);
+		if (addr != NIL) {
+			os << addr << "- (" << record.key << "," << record.address << ") -";
+		}
+		else {
+			os << "NIL" << "- (" << record.key << "," << record.address << ") -";
+		}
+	}
+	if (page.getAddress(page.getSize()) != NIL) {
+		os << page.getAddress(page.getSize()) << "-";
+	}
+	else {
+		os << "NIL" << "-";
+	}
+	os << "] ";
+}
+
 int32_t BTree::binarySearch(const BTreePage& page, int64_t key) {
 	int32_t l = 0;
 	int32_t r = page.getSize() - 1;
@@ -314,6 +336,44 @@ void BTree::insertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t c
 
 }
 
+void BTree::print(std::ostream& os, std::list<int64_t>& printQueue, int64_t* pageNumNewline)
+{
+	// End recursion if queue is empty
+	if (printQueue.empty()) {
+		os << "\n";
+		return;
+	}
+	// What page to print now
+	int64_t pageNum = printQueue.front();
+	// Remove from queue
+	printQueue.pop_front();
+	// Read page without effecting counters
+	BTreePage page = pageCache.getPageExcludeAccesses(pageNum);
+	// Check if depth changed
+	if (*pageNumNewline == pageNum) {
+		// Do not print the newline if we are in root
+		if (pageNum != root_addr) {
+			// Print newline
+			os << "\n";
+		}
+		// Indicate when the next depth change happen
+		*pageNumNewline = page.getAddress(0);
+	}
+	// Print this page
+	printPage(os, page, pageNum);
+	// Add children to queue
+	for (int32_t i = 0; i <= page.getSize(); i++) {
+		if (page.getAddress(i) == NIL) {
+			// Break if page is leaf
+			break;
+		}
+		// Add new pageNum to queue
+		printQueue.push_back(page.getAddress(i));
+	}
+	// Print next element from queue
+	print(os, printQueue, pageNumNewline);
+}
+
 ReturnValue BTree::insert(const BTreeRecord& record) {
 	if (height == 0) {
 		root_addr = pageCache.getNewPageNumber();
@@ -350,4 +410,17 @@ ReturnValue BTree::search(BTreeRecord& record) {
 
 ReturnValue BTree::remove(const BTreeRecord& record) {
 	return ReturnValue::OK;
+}
+
+void BTree::print(std::ostream& os) {
+	// Create queue
+	std::list<int64_t> printQueue;
+	// Point what pageNum needs to insert newline
+	int64_t pageNumNewline = root_addr;
+	// Add root to queue
+	printQueue.push_back(root_addr);
+	// Print header
+	os << "------- B-tree structure -------\n";
+	// Print recursively
+	print(os, printQueue, &pageNumNewline);
 }
