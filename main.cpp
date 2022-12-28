@@ -2,7 +2,8 @@
 #include <string>
 
 #include "BTree.h"
-
+#include "DiskFileRecordManager.h"
+#include "Record.h"
 
 const int PAGE_SIZE = 4096;
 const int TREE_ORDER = 2;
@@ -10,7 +11,7 @@ const std::string FILES_DIR = "diskFiles\\";
 
 int main()
 {
-    BTree btree(FILES_DIR + "btree", PAGE_SIZE, TREE_ORDER, 3);
+    /*BTree btree(FILES_DIR + "btree", PAGE_SIZE, TREE_ORDER, 3);
     btree.insert(BTreeRecord(100, 0x00000032));
     btree.insert(BTreeRecord(80, 0x00000033));
     btree.insert(BTreeRecord(120, 0x00001042));
@@ -39,6 +40,18 @@ int main()
     btree.getCounterWritesIfFlushed();
     btree.getCounterReads();
     btree.getCounterAllOp();
-    btree.getCounterAllOpIfFlushed();
+    btree.getCounterAllOpIfFlushed();*/
+
+    DiskFileRecordManager recordManager(FILES_DIR + "records", Record::size, PAGE_SIZE);
+    recordManager.get_new_record_number();
+    recordManager.get_new_record_number();
+    recordManager.get_new_record_number();
+    recordManager.get_new_record_number();
+
+    int32_t content[Record::numElements] = { 0, 1, 0, 2 };
+    recordManager.write_record_content(1, (char*)content);
+    content[1] = -2;
+    recordManager.get_record_content(1, (char*)content);
+
     return 0;
 }

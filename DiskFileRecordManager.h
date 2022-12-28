@@ -27,9 +27,9 @@ public:
 	void return_record(int64_t record_number);
 
 	// Read one page
-	void get_record_content(int64_t page_number, char* buffer);
+	void get_record_content(int64_t record_number, char* buffer);
 	// Write one page
-	void write_record_content(int64_t page_number, const char* buffer);
+	void write_record_content(int64_t record_number, const char* buffer);
 
 	// Counters
 	using DiskFile::get_counter_writes;
