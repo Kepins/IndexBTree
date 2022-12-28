@@ -40,6 +40,8 @@ void DiskFile::read(int64_t address , char* buffer, int32_t size)
 	file.seekp(address);
 	// Read 'size' bytes
 	file.read(buffer, size);
+	// Reset file if failed
+	file.clear();
 }
 
 void DiskFile::write(int64_t address, const char* buffer, int32_t size)
@@ -61,4 +63,7 @@ void DiskFile::write(int64_t address, const char* buffer, int32_t size)
 	file.seekp(address);
 	// Read 'size' bytes
 	file.write(buffer, size);
+
+	// Flush contents
+	file.flush();
 }

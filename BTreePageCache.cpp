@@ -47,7 +47,6 @@ BTreePage BTreePageCache::getPageExcludeAccesses(int64_t page_number)
 	BTreePage page(PAGE_SIZE, MAX_ELEMENTS);
 	// Page will free allocated memory
 	page.movePageContent(content);
-
 	// Add number of accesses to counter
 	excludeReadAccesses += (pageManager.get_counter_all_op() - before_counter);
 	// Return page

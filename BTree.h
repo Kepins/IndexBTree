@@ -51,10 +51,10 @@ private:
 	ReturnValue simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
 
 	// Try compenation
-	ReturnValue compensate(int64_t pageNum);
+	ReturnValue compensate(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
 
 	// Do compensate (it is possible)
-	void doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent);
+	void doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent, const BTreeRecord& record, int64_t childPageNum);
 
 	// Do split
 	void split(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);

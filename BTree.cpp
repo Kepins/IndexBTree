@@ -113,7 +113,7 @@ ReturnValue BTree::simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& reco
 	return ReturnValue::NOT_POSSIBLE;
 }
 
-ReturnValue BTree::compensate(int64_t pageNum)
+ReturnValue BTree::compensate(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum)
 {
 	// Compensation of root is not possible
 	if (pageNum == root_addr) {
@@ -137,7 +137,7 @@ ReturnValue BTree::compensate(int64_t pageNum)
 		BTreePage sibling(pageCache.getPage(parent.getAddress(childIdx - 1)));
 		if (sibling.getSize() < 2 * ORDER) {
 			// Compensation will happen
-			doCompensate(sibling, parent, page, childIdx-1);
+			doCompensate(sibling, parent, page, childIdx-1, record, childPageNum);
 
 			updateChildren(sibling, parent.getAddress(childIdx - 1));
 			updateChildren(page, pageNum);
@@ -155,7 +155,7 @@ ReturnValue BTree::compensate(int64_t pageNum)
 		BTreePage sibling(pageCache.getPage(parent.getAddress(childIdx + 1)));
 		if (sibling.getSize() < 2 * ORDER) {
 			// Compensation will happen
-			doCompensate(page, parent, sibling, childIdx);
+			doCompensate(page, parent, sibling, childIdx, record, childPageNum);
 
 			updateChildren(sibling, parent.getAddress(childIdx + 1));
 			updateChildren(page, pageNum);
@@ -172,7 +172,7 @@ ReturnValue BTree::compensate(int64_t pageNum)
 	return ReturnValue::NOT_POSSIBLE;
 }
 
-void BTree::doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent)
+void BTree::doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent, const BTreeRecord& record, int64_t childPageNum)
 {
 	// All records that are used in compensation
 	std::vector<BTreeRecord>records;
@@ -195,14 +195,19 @@ void BTree::doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, i
 	}
 	// Add last ptr from right child
 	children.push_back(right.getAddress(right.getSize()));
+
+	// Find where new record should be in vector
+	int32_t idxNew = 0;
+	while (idxNew < records.size() && records[idxNew].key < record.key) {
+		++idxNew;
+	}
+	// Insert new record to vector
+	records.insert(records.begin() + idxNew, record);
+	// Insert corresponding childPageNum
+	children.insert(children.begin() + idxNew, childPageNum);
+
 	// Idx of record that goes to the parent
 	int32_t midIdx = records.size() / 2;
-	
-	// Check if left was full and if it was midIdx cannot be the size of left
-	if ((midIdx == 2*ORDER) && (left.getSize() == 2 * ORDER)) {
-		// Decrement midIdx so left will not be full again
-		--midIdx;
-	}
 
 	// All records before this idx go to left child
 	for (int32_t i = 0; i < midIdx; ++i) {
@@ -320,6 +325,9 @@ ReturnValue BTree::search(BTreeRecord& record, int64_t pageNum, int64_t* pageNum
 	}
 	BTreePage page = pageCache.getPage(pageNum);
 	int32_t idx_bisect = binarySearch(page, record.key);
+	if (page.getRecord(idx_bisect).key < record.key) {
+		idx_bisect++;
+	}
 	BTreeRecord recordFound = page.getRecord(idx_bisect);
 	if (recordFound.key == record.key) {
 		record.address = recordFound.address;
@@ -335,7 +343,7 @@ ReturnValue BTree::search(BTreeRecord& record, int64_t pageNum, int64_t* pageNum
 		pageNumNext = page.getAddress(page.getSize());
 	}
 	else {
-		pageNumNext = page.getAddress(idx_bisect + 1);
+		pageNumNext = page.getAddress(idx_bisect);
 	}
 
 	if (pageNumNext == NIL) {
@@ -354,9 +362,7 @@ void BTree::insertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t c
 	// There is an overflow
 
 	// Try to compensate
-	if (compensate(pageNum) == ReturnValue::OK) {
-		// If it was possible
-		simpleInsertIntoPage(pageNum, record, childPageNum);
+	if (compensate(pageNum, record, childPageNum) == ReturnValue::OK) {
 
 		// Return if this was successful
 		return;

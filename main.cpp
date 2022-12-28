@@ -43,19 +43,52 @@ int main(int argc, char* argv[])
     BTree btree(FILES_DIR + "btree", PAGE_SIZE, TREE_ORDER, TREE_CACHE);
     RecordManager recordsManager(FILES_DIR + "records", RECORDS_CACHE, PAGE_SIZE);
 
+    bool end = false;
     char command;
-    while (*input>>command) {
-        std::cout << command << std::endl;
+    while (!end && *input>>command) {
         switch (command) {
             case 'i': {
                 int64_t key;
                 Record record;
                 *input >> key;
                 int64_t addr = recordsManager.insertRecord(record);
-                btree.insert(BTreeRecord(key, addr));
+                if (btree.insert(BTreeRecord(key, addr))==ReturnValue::OK) {
+                    std::cout << "Record("<< key<<") inserted successfully\n";
+                }
+                else {
+                    std::cout << "Record(" << key << ") already exists!\n";
+                }
+            }break;
+            case 'l': {
+                int64_t key;
+                Record record;
+                *input >> key;
+                for (int i = 0; i < record.numElements; i++) {
+                    *input >> record.content[i];
+                }
+                int64_t addr = recordsManager.insertRecord(record);
+                if (btree.insert(BTreeRecord(key, addr)) == ReturnValue::OK) {
+                    std::cout << "Record(" << key << ") inserted successfully\n";
+                }
+                else {
+                    std::cout << "Record(" << key << ") already exists!\n";
+                }
             }break;
             case 's': {
-
+                int64_t key;
+                *input >> key;
+                BTreeRecord bTrecord(key, 0);
+                if (btree.search(bTrecord) == ReturnValue::OK) {
+                    Record record = recordsManager.getRecord(bTrecord.address);
+                    std::cout << "Record(" << key << "): ";
+                    for (int i = 0; i < record.numElements; i++) {
+                        std::cout << record.content[i] << " ";
+                    }
+                    std::cout << "\n";
+                }
+                else {
+                    std::cout << "Record(" << key << ") not found\n";
+                }
             }break;
             case 'd': {
 
@@ -67,10 +100,11 @@ int main(int argc, char* argv[])
                 btree.print(std::cout);
             }break;
             case 'q': {
-                break;
+                std::cout << "Reading ended\n";
+                end = true;
             }break;
             default: {
-                break;
+                std::cout << "Bad command!\n";
             }break;
         }
     }
@@ -80,28 +114,13 @@ int main(int argc, char* argv[])
         delete input;
     }
 
+    int64_t writes = btree.getCounterWritesIfFlushed() + recordsManager.getCounterWrites() + recordsManager.getHowManyDirty();
+    int64_t reads = btree.getCounterReads() + recordsManager.getCounterReads();
+    std::cout << "All writes: " << writes << "\n";
+    std::cout << "All reads: " << reads << "\n";
 
 
-
-    /*BTree btree(FILES_DIR + "btree", PAGE_SIZE, TREE_ORDER, 3);
-    btree.insert(BTreeRecord(100, 0x00000032));
-    btree.insert(BTreeRecord(80, 0x00000033));
-    btree.insert(BTreeRecord(120, 0x00001042));
-    btree.insert(BTreeRecord(1256, 0x00000000));
-    btree.insert(BTreeRecord(1251, 0x00000100));
-    BTreeRecord find(1256, 0);
-    btree.search(find);
-    find = BTreeRecord(120, 0);
-    btree.search(find);
-    find = BTreeRecord(80, 0);
-    btree.search(find);
-    find = BTreeRecord(99, 0);
-    btree.search(find);
-    find = BTreeRecord(100, 0);
-    btree.search(find);
-    find = BTreeRecord(1251, 0);
-    btree.search(find);
-
+    /*
     btree.getCounterWrites();
     btree.getCounterWritesIfFlushed();
     btree.getCounterReads();
@@ -112,7 +131,8 @@ int main(int argc, char* argv[])
     btree.getCounterWritesIfFlushed();
     btree.getCounterReads();
     btree.getCounterAllOp();
-    btree.getCounterAllOpIfFlushed();*/
+    btree.getCounterAllOpIfFlushed();
+    */
 
 
 
