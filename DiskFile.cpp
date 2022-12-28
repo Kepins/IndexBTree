@@ -24,14 +24,14 @@ DiskFile::~DiskFile()
 void DiskFile::read(int64_t address , char* buffer, int32_t size)
 {
 	// Address of last byte that is requested to be read
-	int32_t last_address = address + size - 1;
+	int64_t last_address = address + size - 1;
 
 	// First block that would need to be read
-	int32_t first_block = address / BLOCK_SIZE;
+	int64_t first_block = address / BLOCK_SIZE;
 	// Last block that would need to be read
-	int32_t last_block = last_address / BLOCK_SIZE;
+	int64_t last_block = last_address / BLOCK_SIZE;
 	// Disk accesses for current operation
-	int32_t current_operation_accesses = last_block - first_block + 1;
+	int64_t current_operation_accesses = last_block - first_block + 1;
 
 	// Add to counter
 	counter_reads += current_operation_accesses;
@@ -52,7 +52,7 @@ void DiskFile::write(int64_t address, const char* buffer, int32_t size)
 	// Last block that would need to be written
 	int64_t last_block = last_address / BLOCK_SIZE;
 	// Disk accesses for current operation
-	int32_t current_operation_accesses = last_block - first_block + 1;
+	int64_t current_operation_accesses = last_block - first_block + 1;
 
 	// Add to counter
 	counter_writes += current_operation_accesses;

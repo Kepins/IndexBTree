@@ -8,7 +8,7 @@ class DiskFilePageManager : private DiskFile
 {
 private:
 	// Size of page
-	int32_t BLOCK_SIZE;
+	const int32_t BLOCK_SIZE;
 	// List of returned pages
 	std::list<int64_t> unused_pages;
 	// Number of next page
