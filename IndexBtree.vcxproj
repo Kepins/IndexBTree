@@ -133,6 +133,7 @@
     <ClCompile Include="BtreeRecord.cpp" />
     <ClCompile Include="DiskFile.cpp" />
     <ClCompile Include="DiskFilePageManager.cpp" />
+    <ClCompile Include="DiskFileRecordManager.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +143,7 @@
     <ClInclude Include="BTreeRecord.h" />
     <ClInclude Include="DiskFile.h" />
     <ClInclude Include="DiskFilePageManager.h" />
+    <ClInclude Include="DiskFileRecordManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
