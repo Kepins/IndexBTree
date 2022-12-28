@@ -1,16 +1,88 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 
 #include "BTree.h"
-#include "DiskFileRecordManager.h"
-#include "Record.h"
+#include "RecordManager.h"
 
-const int PAGE_SIZE = 4096;
-const int TREE_ORDER = 2;
-const std::string FILES_DIR = "diskFiles\\";
+const int NUM_ELEM_IN_RECORD = 10;
 
-int main()
+int main(int argc, char* argv[])
 {
+    if (argc != 6) {
+        std::cerr << "Bad arguments!";
+        return 1;
+    }
+
+    int PAGE_SIZE = std::stoi(argv[1]);
+    int TREE_ORDER = std::stoi(argv[2]);
+    std::string FILES_DIR = argv[3];
+    int TREE_CACHE = std::stoi(argv[4]);
+    int RECORDS_CACHE = std::stoi(argv[5]);
+
+    std::string fileName="";
+    int mode;
+    std::istream* input;
+
+    std::cout << "Choose mode: \n"
+        << "0. Interactive\n"
+        << "1. From txt file\n";
+    
+    std::cin >> mode;
+    input = &std::cin;
+    if (mode == 1) {
+        std::cin >> fileName;
+        input = new std::ifstream(fileName);
+        if (!input->good()) {
+            delete input;
+            std::cerr << "Error while opening file!\n";
+            return 1;
+        }
+    }
+
+    BTree btree(FILES_DIR + "btree", PAGE_SIZE, TREE_ORDER, TREE_CACHE);
+    RecordManager recordsManager(FILES_DIR + "records", RECORDS_CACHE, PAGE_SIZE);
+
+    char command;
+    while (*input>>command) {
+        std::cout << command << std::endl;
+        switch (command) {
+            case 'i': {
+                int64_t key;
+                Record record;
+                *input >> key;
+                int64_t addr = recordsManager.insertRecord(record);
+                btree.insert(BTreeRecord(key, addr));
+            }break;
+            case 's': {
+
+            }break;
+            case 'd': {
+
+            }break;
+            case 'u': {
+
+            }break;
+            case 'p': {
+                btree.print(std::cout);
+            }break;
+            case 'q': {
+                break;
+            }break;
+            default: {
+                break;
+            }break;
+        }
+    }
+
+
+    if (mode == 1) {
+        delete input;
+    }
+
+
+
+
     /*BTree btree(FILES_DIR + "btree", PAGE_SIZE, TREE_ORDER, 3);
     btree.insert(BTreeRecord(100, 0x00000032));
     btree.insert(BTreeRecord(80, 0x00000033));
@@ -42,16 +114,7 @@ int main()
     btree.getCounterAllOp();
     btree.getCounterAllOpIfFlushed();*/
 
-    DiskFileRecordManager recordManager(FILES_DIR + "records", Record::size, PAGE_SIZE);
-    recordManager.get_new_record_number();
-    recordManager.get_new_record_number();
-    recordManager.get_new_record_number();
-    recordManager.get_new_record_number();
 
-    int32_t content[Record::numElements] = { 0, 1, 0, 2 };
-    recordManager.write_record_content(1, (char*)content);
-    content[1] = -2;
-    recordManager.get_record_content(1, (char*)content);
 
     return 0;
 }

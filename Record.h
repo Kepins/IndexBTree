@@ -12,7 +12,7 @@ struct Record
 	// Size of record
 	static const size_t size = NUM_ELEMENTS * sizeof(int32_t);
 	// Array of elements
-	int32_t content[NUM_ELEMENTS];
+	int32_t content[NUM_ELEMENTS] = {};
 };
 
 

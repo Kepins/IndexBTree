@@ -15,7 +15,7 @@ private:
 	int64_t next_page;
 public:
 	DiskFilePageManager(const std::string& filePath, int32_t block_size = 4096);
-	~DiskFilePageManager();
+	virtual ~DiskFilePageManager();
 
 	// Give unused page
 	int64_t get_new_page_number();

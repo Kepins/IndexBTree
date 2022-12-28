@@ -413,6 +413,11 @@ ReturnValue BTree::remove(const BTreeRecord& record) {
 }
 
 void BTree::print(std::ostream& os) {
+	if (root_addr == NIL) {
+		os << "------- B-tree empty -------\n";
+		return;
+	}
+
 	// Create queue
 	std::list<int64_t> printQueue;
 	// Point what pageNum needs to insert newline

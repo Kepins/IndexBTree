@@ -13,57 +13,87 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\BTree">
+      <UniqueIdentifier>{4409c73b-47ca-4ae5-b438-6ad0a4df37b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Disk">
+      <UniqueIdentifier>{4aeea63f-169d-4c12-9f1d-3f104f7cd720}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\BTree">
+      <UniqueIdentifier>{206d3771-792f-4377-a9ad-bf3bf765bf4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Disk">
+      <UniqueIdentifier>{cd2db91f-9964-4967-b67c-c2679de932bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Records">
+      <UniqueIdentifier>{7763a98a-c0f8-4f76-9f64-d7ea6408ee8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Records">
+      <UniqueIdentifier>{f6dbba74-8c61-447b-ad27-0efd9a8db375}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BtreeRecord.cpp">
+      <Filter>Source Files\BTree</Filter>
+    </ClCompile>
     <ClCompile Include="BTree.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\BTree</Filter>
     </ClCompile>
     <ClCompile Include="BTreePage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BtreeRecord.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\BTree</Filter>
     </ClCompile>
     <ClCompile Include="BTreePageCache.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\BTree</Filter>
     </ClCompile>
     <ClCompile Include="DiskFile.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Disk</Filter>
     </ClCompile>
     <ClCompile Include="DiskFilePageManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Disk</Filter>
     </ClCompile>
-    <ClCompile Include="DiskFileRecordManager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="RecordManager.cpp">
+      <Filter>Source Files\Records</Filter>
+    </ClCompile>
+    <ClCompile Include="DiskPage.cpp">
+      <Filter>Source Files\Disk</Filter>
+    </ClCompile>
+    <ClCompile Include="DiskFilePageManagerCache.cpp">
+      <Filter>Source Files\Disk</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BTreeRecord.h">
+      <Filter>Header Files\BTree</Filter>
+    </ClInclude>
     <ClInclude Include="BTree.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\BTree</Filter>
     </ClInclude>
     <ClInclude Include="BTreePage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BTreeRecord.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\BTree</Filter>
     </ClInclude>
     <ClInclude Include="BTreePageCache.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\BTree</Filter>
     </ClInclude>
     <ClInclude Include="DiskFile.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Disk</Filter>
     </ClInclude>
     <ClInclude Include="DiskFilePageManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Disk</Filter>
     </ClInclude>
-    <ClInclude Include="DiskFileRecordManager.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="RecordManager.h">
+      <Filter>Header Files\Records</Filter>
     </ClInclude>
     <ClInclude Include="Record.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Records</Filter>
+    </ClInclude>
+    <ClInclude Include="DiskFilePageManagerCache.h">
+      <Filter>Header Files\Disk</Filter>
+    </ClInclude>
+    <ClInclude Include="DiskPage.h">
+      <Filter>Header Files\Disk</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
