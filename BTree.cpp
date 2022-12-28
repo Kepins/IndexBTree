@@ -15,7 +15,7 @@ BTree::~BTree()
 
 void BTree::printPage(std::ostream& os, const BTreePage& page, int64_t selfPageNum)
 {
-	os << "<" << selfPageNum <<">[-";
+	os << "<" << selfPageNum <<">{"<< page.getParent() <<"}[-";
 	for (int32_t i = 0; i < page.getSize(); i++) {
 		int64_t addr = page.getAddress(i);
 		BTreeRecord record = page.getRecord(i);
@@ -54,6 +54,20 @@ int32_t BTree::binarySearch(const BTreePage& page, int64_t key) {
 		idx = (l + r) / 2;
 	}
 	return idx;
+}
+
+void BTree::updateChildren(const BTreePage& page, int64_t pageNum)
+{
+	// Update childern of new page
+	for (int32_t i = 0; i <= page.getSize(); i++) {
+		if (page.getAddress(i) != NIL) {
+			BTreePage child = pageCache.getPage(page.getAddress(i));
+			if (child.getParent() != pageNum) {
+				child.setParent(pageNum);
+				pageCache.setPage(page.getAddress(i), child);
+			}
+		}
+	}
 }
 
 ReturnValue BTree::simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum)
@@ -123,7 +137,11 @@ ReturnValue BTree::compensate(int64_t pageNum)
 		BTreePage sibling(pageCache.getPage(parent.getAddress(childIdx - 1)));
 		if (sibling.getSize() < 2 * ORDER) {
 			// Compensation will happen
-			doCompensate(sibling, parent, page, childIdx);
+			doCompensate(sibling, parent, page, childIdx-1);
+
+			updateChildren(sibling, parent.getAddress(childIdx - 1));
+			updateChildren(page, pageNum);
+
 			// Save all the changes done to pages
 			pageCache.setPage(page.getParent(), parent);
 			pageCache.setPage(pageNum, page);
@@ -132,12 +150,16 @@ ReturnValue BTree::compensate(int64_t pageNum)
 		}
 	}
 	// Is compensation with right sibling possible
-	if (childIdx < parent.getSize() + 1) {
+	if (childIdx < parent.getSize()) {
 		// Get right sibling
 		BTreePage sibling(pageCache.getPage(parent.getAddress(childIdx + 1)));
 		if (sibling.getSize() < 2 * ORDER) {
 			// Compensation will happen
 			doCompensate(page, parent, sibling, childIdx);
+
+			updateChildren(sibling, parent.getAddress(childIdx + 1));
+			updateChildren(page, pageNum);
+
 			// Save all the changes done to pages
 			pageCache.setPage(page.getParent(), parent);
 			pageCache.setPage(pageNum, page);
@@ -225,7 +247,7 @@ void BTree::split(int64_t pageNum, const BTreeRecord& record, int64_t childPageN
 
 	// Find where new record should be in vector
 	int32_t idxNew = 0;
-	while (records[idxNew].key < record.key) {
+	while (idxNew < records.size() && records[idxNew].key < record.key) {
 		++idxNew;
 	}
 	// Insert new record to vector
@@ -259,13 +281,15 @@ void BTree::split(int64_t pageNum, const BTreeRecord& record, int64_t childPageN
 	// Set parent of new page to the parent of old page
 	newPage.setParent(oldPage.getParent());
 
-	// Save changes
-	pageCache.setPage(pageNum, oldPage);
-	pageCache.setPage(newPageNum, newPage);
+	updateChildren(newPage, newPageNum);
 
 	// Check if page that is not the root is being split
 	if (oldPage.getParent() != NIL) {
 		// Old page is not the root
+
+		// Save changes
+		pageCache.setPage(pageNum, oldPage);
+		pageCache.setPage(newPageNum, newPage);
 
 		// Insert records[midIdx] to parent
 		insertIntoPage(oldPage.getParent(), records[midIdx], newPageNum);
@@ -281,6 +305,12 @@ void BTree::split(int64_t pageNum, const BTreeRecord& record, int64_t childPageN
 	root_page.setAddress(1, pageNum);
 	pageCache.setPage(root_addr, root_page);
 	oldPage.setParent(root_addr);
+	newPage.setParent(root_addr);
+
+	// Save changes
+	pageCache.setPage(pageNum, oldPage);
+	pageCache.setPage(newPageNum, newPage);
+
 	height++;
 }
 

@@ -38,6 +38,9 @@ private:
 	// Returns the idx where key could be
 	static int32_t binarySearch(const BTreePage& page, int64_t key);
 
+	// Update children of a page
+	void updateChildren(const BTreePage& page, int64_t pageNum);
+
 	// Search recursively to find record.key and fill record.addr
 	ReturnValue search(BTreeRecord& record, int64_t pageNum, int64_t* pageNumEnd);
 
