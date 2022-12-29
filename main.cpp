@@ -110,14 +110,13 @@ int main(int argc, char* argv[])
             case 'u': {
                 int64_t key;
                 *input >> key;
-                
+                Record record;
+                std::cout << "New values: ";
+                for (int i = 0; i < record.numElements; i++) {
+                    *input >> record.content[i];
+                }
                 BTreeRecord bTrecord(key, 0);
                 if (btree.search(bTrecord) == ReturnValue::OK) {
-                    Record record;
-                    std::cout << "New values: ";
-                    for (int i = 0; i < record.numElements; i++) {
-                        *input >> record.content[i];
-                    }
                     recordsManager.updateRecord(bTrecord.address, record);
                     std::cout << "Record(" << key << ") updated ";
                     std::cout << "\n";
