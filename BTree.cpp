@@ -15,7 +15,12 @@ BTree::~BTree()
 
 void BTree::printPage(std::ostream& os, const BTreePage& page, int64_t selfPageNum)
 {
-	os << "<" << selfPageNum <<">{"<< page.getParent() <<"}[-";
+	if (page.getParent() == NIL) {
+		os << "<" << selfPageNum << ">{" << "NIL" << "}[-";
+	}
+	else {
+		os << "<" << selfPageNum << ">{" << page.getParent() << "}[-";
+	}
 	for (int32_t i = 0; i < page.getSize(); i++) {
 		int64_t addr = page.getAddress(i);
 		BTreeRecord record = page.getRecord(i);
