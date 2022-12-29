@@ -107,6 +107,8 @@ public:
 	int64_t getCounterAllOp() { return pageCache.get_counter_all_op(); }
 	int64_t getCounterWritesIfFlushed() { return pageCache.get_counter_writes_after_flush(); }
 	int64_t getCounterAllOpIfFlushed() { return pageCache.get_counter_all_op_after_flush(); }
+
+	int32_t getHeight() { return height; }
 };
 
 #endif

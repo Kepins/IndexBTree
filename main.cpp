@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
         std::cerr << "Bad arguments!";
         return 1;
     }
-
+    
     int PAGE_SIZE = std::stoi(argv[1]);
     int TREE_ORDER = std::stoi(argv[2]);
     std::string FILES_DIR = argv[3];
@@ -145,6 +145,17 @@ int main(int argc, char* argv[])
             case 'p': {
                 btree.print(std::cout);
             }break;
+            // Get info
+            case '?': {
+                int64_t writes = btree.getCounterWrites() + recordsManager.getCounterWrites();
+                int64_t writesFlush = btree.getCounterWritesIfFlushed() + recordsManager.getCounterWrites() + recordsManager.getHowManyDirty();
+                int64_t reads = btree.getCounterReads() + recordsManager.getCounterReads();
+                std::cout << "----INFO----\n";
+                std::cout << "Height: " << btree.getHeight() << "\n";
+                std::cout << "Reads: " << reads << "\n";
+                std::cout << "Writes: " << writes << "\n";
+                std::cout << "Writes if flushed: " << writesFlush << "\n";
+            }break;
             // End loop
             case 'q': {
                 std::cout << "Reading ended\n";
@@ -152,7 +163,7 @@ int main(int argc, char* argv[])
             }break;
             // Command not recognized
             default: {
-                std::cout << "Bad command!\n";
+                std::cout << "Bad command(use 'q' to exit)!\n";
             }break;
         }
     }
@@ -167,23 +178,6 @@ int main(int argc, char* argv[])
     int64_t reads = btree.getCounterReads() + recordsManager.getCounterReads();
     std::cout << "All writes: " << writes << "\n";
     std::cout << "All reads: " << reads << "\n";
-
-
-    /*
-    btree.getCounterWrites();
-    btree.getCounterWritesIfFlushed();
-    btree.getCounterReads();
-    btree.getCounterAllOp();
-    btree.getCounterAllOpIfFlushed();
-    btree.print(std::cout);
-    btree.getCounterWrites();
-    btree.getCounterWritesIfFlushed();
-    btree.getCounterReads();
-    btree.getCounterAllOp();
-    btree.getCounterAllOpIfFlushed();
-    */
-
-
 
     return 0;
 }
