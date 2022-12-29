@@ -47,6 +47,7 @@ int main(int argc, char* argv[])
     char command;
     while (!end && *input>>command) {
         switch (command) {
+            // Insert
             case 'i': {
                 int64_t key;
                 Record record;
@@ -59,6 +60,7 @@ int main(int argc, char* argv[])
                     std::cout << "Record(" << key << ") already exists!\n";
                 }
             }break;
+            // Long insert
             case 'l': {
                 int64_t key;
                 Record record;
@@ -74,6 +76,7 @@ int main(int argc, char* argv[])
                     std::cout << "Record(" << key << ") already exists!\n";
                 }
             }break;
+            // Search for record
             case 's': {
                 int64_t key;
                 *input >> key;
@@ -90,9 +93,20 @@ int main(int argc, char* argv[])
                     std::cout << "Record(" << key << ") not found\n";
                 }
             }break;
+            // Delete
             case 'd': {
-
+                int64_t key;
+                *input >> key;
+                BTreeRecord bTrecord(key, 0);
+                if (btree.remove(bTrecord) == ReturnValue::OK) {
+                    recordsManager.deleteRecord(bTrecord.address);
+                    std::cout << "Record(" << key << ") removed successfully\n";
+                 }
+                else {
+                    std::cout<< "Record(" << key << ") not found\n";
+                }
             }break;
+            // Update
             case 'u': {
                 int64_t key;
                 *input >> key;
@@ -112,6 +126,7 @@ int main(int argc, char* argv[])
                     std::cout << "Record(" << key << ") not found\n";
                 }
             }break;
+            // Read sequential
             case 'r': {
                 btree.startSequentialRead();
                 BTreeRecord bTrecord(0,0);
@@ -126,21 +141,25 @@ int main(int argc, char* argv[])
                 }
                 std::cout << "---- End read ----\n";
             }break;
+            // Print tree
             case 'p': {
                 btree.print(std::cout);
             }break;
+            // End loop
             case 'q': {
                 std::cout << "Reading ended\n";
                 end = true;
             }break;
+            // Command not recognized
             default: {
                 std::cout << "Bad command!\n";
             }break;
         }
     }
 
-
+    // Reading from file
     if (mode == 1) {
+        ((std::ifstream*)input)->close();
         delete input;
     }
 

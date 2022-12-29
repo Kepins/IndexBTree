@@ -56,14 +56,26 @@ private:
 	// Try to insert into this specific page without spliting and compenstaion
 	ReturnValue simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
 
-	// Try compenation
-	ReturnValue compensate(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
+	// Try compensation in insert
+	ReturnValue compensateInsert(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
 
-	// Do compensate (it is possible)
-	void doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent, const BTreeRecord& record, int64_t childPageNum);
+	// Do compensate in insert (it is possible)
+	void doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent, const BTreeRecord* record, int64_t childPageNum);
 
 	// Do split
 	void split(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
+
+	// Deletes record from page without compensation and merging
+	void simpleRemoveRecord(BTreePage& page, const BTreeRecord& record);
+
+	// Handle underflow
+	void handleUnderflow(int64_t pageNum);
+
+	// Try compesnation in deletion
+	ReturnValue compensateRemove(int64_t pageNum);
+
+	// Do merge
+	void merge(int64_t pageNum);
 
 	// Sets new seqCurrPage and seqCurrIdx to proper values
 	void setNextSeqRead(int64_t parentPage, int64_t childPageNum);
@@ -79,7 +91,7 @@ public:
 	// Uses key to find record and fills address
 	ReturnValue search(BTreeRecord& record);
 	// Uses only key from record and removes record with same key
-	ReturnValue remove(const BTreeRecord& record);
+	ReturnValue remove(BTreeRecord& record);
 
 	// Put tree in a state to start reading with getNextRecord
 	void startSequentialRead();

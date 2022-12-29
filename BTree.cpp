@@ -113,7 +113,7 @@ ReturnValue BTree::simpleInsertIntoPage(int64_t pageNum, const BTreeRecord& reco
 	return ReturnValue::NOT_POSSIBLE;
 }
 
-ReturnValue BTree::compensate(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum)
+ReturnValue BTree::compensateInsert(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum)
 {
 	// Compensation of root is not possible
 	if (pageNum == root_addr) {
@@ -137,7 +137,7 @@ ReturnValue BTree::compensate(int64_t pageNum, const BTreeRecord& record, int64_
 		BTreePage sibling(pageCache.getPage(parent.getAddress(childIdx - 1)));
 		if (sibling.getSize() < 2 * ORDER) {
 			// Compensation will happen
-			doCompensate(sibling, parent, page, childIdx-1, record, childPageNum);
+			doCompensate(sibling, parent, page, childIdx-1, &record, childPageNum);
 
 			updateChildren(sibling, parent.getAddress(childIdx - 1));
 			updateChildren(page, pageNum);
@@ -155,7 +155,7 @@ ReturnValue BTree::compensate(int64_t pageNum, const BTreeRecord& record, int64_
 		BTreePage sibling(pageCache.getPage(parent.getAddress(childIdx + 1)));
 		if (sibling.getSize() < 2 * ORDER) {
 			// Compensation will happen
-			doCompensate(page, parent, sibling, childIdx, record, childPageNum);
+			doCompensate(page, parent, sibling, childIdx, &record, childPageNum);
 
 			updateChildren(sibling, parent.getAddress(childIdx + 1));
 			updateChildren(page, pageNum);
@@ -172,7 +172,7 @@ ReturnValue BTree::compensate(int64_t pageNum, const BTreeRecord& record, int64_
 	return ReturnValue::NOT_POSSIBLE;
 }
 
-void BTree::doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent, const BTreeRecord& record, int64_t childPageNum)
+void BTree::doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, int32_t idxParent, const BTreeRecord* record, int64_t childPageNum)
 {
 	// All records that are used in compensation
 	std::vector<BTreeRecord>records;
@@ -196,15 +196,18 @@ void BTree::doCompensate(BTreePage& left, BTreePage& parent, BTreePage& right, i
 	// Add last ptr from right child
 	children.push_back(right.getAddress(right.getSize()));
 
-	// Find where new record should be in vector
-	int32_t idxNew = 0;
-	while (idxNew < records.size() && records[idxNew].key < record.key) {
-		++idxNew;
+	// Does compensation insert new record
+	if (record != nullptr) {
+		// Find where new record should be in vector
+		int32_t idxNew = 0;
+		while (idxNew < records.size() && records[idxNew].key < record->key) {
+			++idxNew;
+		}
+		// Insert new record to vector
+		records.insert(records.begin() + idxNew, *record);
+		// Insert corresponding childPageNum
+		children.insert(children.begin() + idxNew, childPageNum);
 	}
-	// Insert new record to vector
-	records.insert(records.begin() + idxNew, record);
-	// Insert corresponding childPageNum
-	children.insert(children.begin() + idxNew, childPageNum);
 
 	// Idx of record that goes to the parent
 	int32_t midIdx = records.size() / 2;
@@ -325,14 +328,14 @@ ReturnValue BTree::search(BTreeRecord& record, int64_t pageNum, int64_t* pageNum
 	}
 	BTreePage page = pageCache.getPage(pageNum);
 	int32_t idx_bisect = binarySearch(page, record.key);
-	if (page.getRecord(idx_bisect).key < record.key) {
-		idx_bisect++;
-	}
 	BTreeRecord recordFound = page.getRecord(idx_bisect);
 	if (recordFound.key == record.key) {
 		record.address = recordFound.address;
 		*pageNumEnd = pageNum;
 		return ReturnValue::OK;
+	}
+	if (recordFound.key < record.key) {
+		idx_bisect++;
 	}
 	int64_t pageNumNext;
 	if (record.key < page.getRecord(0).key) {
@@ -362,7 +365,7 @@ void BTree::insertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t c
 	// There is an overflow
 
 	// Try to compensate
-	if (compensate(pageNum, record, childPageNum) == ReturnValue::OK) {
+	if (compensateInsert(pageNum, record, childPageNum) == ReturnValue::OK) {
 
 		// Return if this was successful
 		return;
@@ -370,6 +373,194 @@ void BTree::insertIntoPage(int64_t pageNum, const BTreeRecord& record, int64_t c
 	// Compensation not possible do a split
 	split(pageNum, record, childPageNum);
 
+}
+
+void BTree::simpleRemoveRecord(BTreePage& page, const BTreeRecord& record)
+{
+	// Find record in leaf
+	int32_t idx_bisect = binarySearch(page, record.key);
+
+	// Move all records after idx_bisect to the left
+	for (int32_t i = idx_bisect; i < page.getSize() - 1; ++i)
+	{
+		page.setRecord(i, page.getRecord(i + 1));
+		page.setAddress(i, page.getAddress(i + 1));
+	}
+	page.setAddress(page.getSize() - 1, page.getAddress(page.getSize()));
+	// Set size
+	page.setSize(page.getSize() - 1);
+}
+
+void BTree::handleUnderflow(int64_t pageNum) {
+	// Try compensation
+	if (compensateRemove(pageNum) == ReturnValue::OK) {
+		// Return success
+		return;
+	}
+	// Do merge
+	merge(pageNum);
+}
+
+ReturnValue BTree::compensateRemove(int64_t pageNum)
+{
+	// Compensation of root is not possible
+	if (pageNum == root_addr) {
+		return ReturnValue::NOT_POSSIBLE;
+	}
+
+	// Get page that needs compensation
+	BTreePage page = pageCache.getPage(pageNum);
+	// Get parent of this page
+	BTreePage parent = pageCache.getPage(page.getParent());
+
+	// Where page is in parent list
+	int32_t childIdx = 0;
+	while (parent.getAddress(childIdx) != pageNum) {
+		++childIdx;
+	}
+
+	// Is compensation with left sibling possible
+	if (childIdx > 0) {
+		// Get left sibling
+		BTreePage sibling(pageCache.getPage(parent.getAddress(childIdx - 1)));
+		if (sibling.getSize() > ORDER) {
+			// Compensation will happen
+			doCompensate(sibling, parent, page, childIdx - 1, nullptr, 0);
+
+			updateChildren(sibling, parent.getAddress(childIdx - 1));
+			updateChildren(page, pageNum);
+
+			// Save all the changes done to pages
+			pageCache.setPage(page.getParent(), parent);
+			pageCache.setPage(pageNum, page);
+			pageCache.setPage(parent.getAddress(childIdx - 1), sibling);
+			return ReturnValue::OK;
+		}
+	}
+	// Is compensation with right sibling possible
+	if (childIdx < parent.getSize()) {
+		// Get right sibling
+		BTreePage sibling(pageCache.getPage(parent.getAddress(childIdx + 1)));
+		if (sibling.getSize() > ORDER) {
+			// Compensation will happen
+			doCompensate(page, parent, sibling, childIdx, nullptr, 0);
+
+			updateChildren(sibling, parent.getAddress(childIdx + 1));
+			updateChildren(page, pageNum);
+
+			// Save all the changes done to pages
+			pageCache.setPage(page.getParent(), parent);
+			pageCache.setPage(pageNum, page);
+			pageCache.setPage(parent.getAddress(childIdx + 1), sibling);
+			return ReturnValue::OK;
+		}
+	}
+
+	// Compensation was not possible since no sibling had num records < 2*ORDER
+	return ReturnValue::NOT_POSSIBLE;
+}
+
+void BTree::merge(int64_t pageNum) {
+	// Page where underflow happened
+	BTreePage underflown = pageCache.getPage(pageNum);
+	// Parent
+	BTreePage parent = pageCache.getPage(underflown.getParent());
+
+	// Where page is in parent list
+	int32_t siblingIdx;
+	int32_t childIdx = 0;
+	while (parent.getAddress(childIdx) != pageNum) {
+		++childIdx;
+	}
+	// Use sibling from the left
+	if (childIdx > 0) {
+		siblingIdx = childIdx - 1;
+	}
+	// Use sibling from the right
+	else {
+		siblingIdx = childIdx + 1;
+	}
+	// Read sibling page
+	int64_t siblingPageNum = parent.getAddress(siblingIdx);
+	BTreePage sibling = pageCache.getPage(siblingPageNum);
+
+	int32_t leftIdx;
+	BTreePage* left;
+	BTreePage* right;
+
+	if (childIdx < siblingIdx) {
+		left = &underflown;
+		right = &sibling;
+		leftIdx = childIdx;
+	}
+	else {
+		left = &sibling;
+		right = &underflown;
+		leftIdx = siblingIdx;
+	}
+	BTreeRecord fromParent = parent.getRecord(leftIdx);
+	int64_t leftPage = parent.getAddress(leftIdx);
+	int64_t rightPage = parent.getAddress(leftIdx + 1);
+
+	std::vector<BTreeRecord> records;
+	std::vector<int64_t> children;
+
+	for (int32_t i = 0; i < left->getSize(); i++) {
+		records.push_back(left->getRecord(i));
+		children.push_back(left->getAddress(i));
+	}
+	children.push_back(left->getAddress(left->getSize()));
+
+	records.push_back(fromParent);
+	for (int32_t i = 0; i < right->getSize(); i++) {
+		records.push_back(right->getRecord(i));
+		children.push_back(right->getAddress(i));
+	}
+	children.push_back(right->getAddress(right->getSize()));
+
+	for (int32_t i = 0; i < records.size(); i++) {
+		right->setRecord(i, records[i]);
+		right->setAddress(i, children[i]);
+	}
+	right->setAddress(records.size(), children[records.size()]);
+	right->setSize(records.size());
+
+	updateChildren(*right, rightPage);
+
+	// Removes record and pointer to leftPage
+	simpleRemoveRecord(parent, fromParent);
+
+	// Dispose leftPage
+	pageCache.returnPage(leftPage);
+
+	if (right->getParent() == root_addr) {
+		if (parent.getSize() == 0) {
+			right->setParent(NIL);
+			// Return current root
+			pageCache.returnPage(root_addr);
+			// Change root
+			root_addr = rightPage;
+			// Changer height
+			--height;
+			// Save rightPage
+			pageCache.setPage(rightPage, *right);
+
+			return;
+		}
+		else {
+			// Save rightPage and parent
+			pageCache.setPage(rightPage, *right);
+			pageCache.setPage(right->getParent(), parent);
+		}
+	}
+	else {
+		// Save rightPage and parent
+		pageCache.setPage(rightPage, *right);
+		pageCache.setPage(right->getParent(), parent);
+		if (parent.getSize() < ORDER) {
+			handleUnderflow(right->getParent());
+		}
+	}
 }
 
 void BTree::print(std::ostream& os, std::list<int64_t>& printQueue, int64_t* pageNumNewline)
@@ -444,7 +635,78 @@ ReturnValue BTree::search(BTreeRecord& record) {
 	return search(record, this->root_addr, &pageNumEnd);
 }
 
-ReturnValue BTree::remove(const BTreeRecord& record) {
+ReturnValue BTree::remove(BTreeRecord& record) {
+	// Page where search ends
+	int64_t pageWhereFound;
+	// Find record with key in the tree
+	if (search(record, root_addr, &pageWhereFound) == ReturnValue::NOT_FOUND) {
+		// Return not found if record with such key does not exist
+		return ReturnValue::NOT_FOUND;
+	}
+	// Page where search ended
+	BTreePage pageFound = pageCache.getPage(pageWhereFound);
+	// Check if record is in the leaf
+	if (pageFound.getAddress(0) != NIL) {
+		// Not in leaf
+
+		// Search for biggest record on the left subtree
+		int32_t idx_bisect = binarySearch(pageFound, record.key);
+
+		// Root of left subtree
+		int64_t leftChild = pageFound.getAddress(idx_bisect);
+		
+		// Leaf that has bigges records in subtree
+		int64_t leafWithBiggestRecordSubtree;
+		BTreeRecord temp(INT64_MAX, 0);
+		search(temp, leftChild, &leafWithBiggestRecordSubtree);
+
+		// Read leaf
+		BTreePage leaf = pageCache.getPage(leafWithBiggestRecordSubtree);
+
+		// Last record in Leaf
+		BTreeRecord biggestInLeaf = leaf.getRecord(leaf.getSize() - 1);
+		
+		// Swap records
+		pageFound.setRecord(idx_bisect, biggestInLeaf);
+		leaf.setRecord(leaf.getSize() - 1, record);
+
+		// Save page content
+		pageCache.setPage(pageWhereFound, pageFound);
+
+		// Swap page to leaf
+		pageWhereFound = leafWithBiggestRecordSubtree;
+		pageFound = leaf;
+	}
+	// Record is now in leaf
+
+	// Remove record from page
+	simpleRemoveRecord(pageFound, record);
+
+	if (root_addr == pageWhereFound) {
+		if (pageFound.getSize() == 0) {
+			pageCache.returnPage(root_addr);
+			root_addr = NIL;
+			height = 0;
+		}
+		else {
+			// Save page
+			pageCache.setPage(pageWhereFound, pageFound);
+		}
+		return ReturnValue::OK;
+	}
+
+	// Save page
+	pageCache.setPage(pageWhereFound, pageFound);
+
+	// Check if we can just end deletion
+	if (pageFound.getSize() >= ORDER) {
+		// Return success
+		return ReturnValue::OK;
+	}
+	// Try compenstation and then do merges
+	handleUnderflow(pageWhereFound);
+
+	// Deleted successfully
 	return ReturnValue::OK;
 }
 
