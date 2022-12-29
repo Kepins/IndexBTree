@@ -94,7 +94,37 @@ int main(int argc, char* argv[])
 
             }break;
             case 'u': {
-
+                int64_t key;
+                *input >> key;
+                
+                BTreeRecord bTrecord(key, 0);
+                if (btree.search(bTrecord) == ReturnValue::OK) {
+                    Record record;
+                    std::cout << "New values: ";
+                    for (int i = 0; i < record.numElements; i++) {
+                        *input >> record.content[i];
+                    }
+                    recordsManager.updateRecord(bTrecord.address, record);
+                    std::cout << "Record(" << key << ") updated ";
+                    std::cout << "\n";
+                }
+                else {
+                    std::cout << "Record(" << key << ") not found\n";
+                }
+            }break;
+            case 'r': {
+                btree.startSequentialRead();
+                BTreeRecord bTrecord(0,0);
+                std::cout << "---- Sequential read ----\n";
+                while (btree.getNextRecord(bTrecord) == ReturnValue::OK) {
+                    Record record = recordsManager.getRecord(bTrecord.address);
+                    std::cout << "Record(" << bTrecord.key << "): ";
+                    for (int i = 0; i < record.numElements; i++) {
+                        std::cout << record.content[i] << " ";
+                    }
+                    std::cout << "\n";
+                }
+                std::cout << "---- End read ----\n";
             }break;
             case 'p': {
                 btree.print(std::cout);

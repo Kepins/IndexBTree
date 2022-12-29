@@ -13,7 +13,8 @@ enum class ReturnValue
 	OK,
 	NOT_FOUND,
 	ALREADY_EXISTS,
-	NOT_POSSIBLE
+	NOT_POSSIBLE,
+	READ_ENDED
 };
 
 class BTree
@@ -28,6 +29,11 @@ private:
 
 	// Value to represent abbsence of a page
 	static const int64_t NIL = INT64_MAX;
+
+	// What page to read from with getNextRecord()
+	int64_t seqCurrPage;
+	// What position on that page to read
+	int32_t seqCurrIdx;
 
 	// Manager to access disk pages
 	BTreePageCache pageCache;
@@ -59,6 +65,9 @@ private:
 	// Do split
 	void split(int64_t pageNum, const BTreeRecord& record, int64_t childPageNum);
 
+	// Sets new seqCurrPage and seqCurrIdx to proper values
+	void setNextSeqRead(int64_t parentPage, int64_t childPageNum);
+
 	// Print tree recursively
 	void print(std::ostream& os, std::list<int64_t>& printQueue, int64_t* pageNumNewline);
 public:
@@ -71,6 +80,12 @@ public:
 	ReturnValue search(BTreeRecord& record);
 	// Uses only key from record and removes record with same key
 	ReturnValue remove(const BTreeRecord& record);
+
+	// Put tree in a state to start reading with getNextRecord
+	void startSequentialRead();
+	// Used for sequential read
+	ReturnValue getNextRecord(BTreeRecord& record);
+
 	// Prints tree
 	void print(std::ostream& os);
 

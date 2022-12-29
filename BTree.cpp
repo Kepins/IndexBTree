@@ -448,6 +448,67 @@ ReturnValue BTree::remove(const BTreeRecord& record) {
 	return ReturnValue::OK;
 }
 
+void BTree::startSequentialRead() {
+	// No tree exsits
+	if (root_addr == NIL) {
+		// End sequential read
+		seqCurrPage = NIL;
+		return;
+	}
+	// Record with the smalles possible key
+	BTreeRecord record(INT64_MIN, 0);
+	// Search from root
+	search(record, this->root_addr, &seqCurrPage);
+	// Index on that page at which to start reading
+	seqCurrIdx = 0;
+}
+
+
+void BTree::setNextSeqRead(int64_t parentPage, int64_t childPageNum)
+{
+	if (parentPage == NIL) {
+		// End read
+		seqCurrPage = NIL;
+		return;
+	}
+	BTreePage parent = pageCache.getPage(parentPage);
+
+	int32_t childIdx = 0;
+	while (parent.getAddress(childIdx) != childPageNum) {
+		++childIdx;
+	}
+	if (childIdx == parent.getSize()) {
+		setNextSeqRead(parent.getParent(), parentPage);
+	}
+	else {
+		seqCurrPage = parentPage;
+		seqCurrIdx = childIdx;
+	}
+}
+
+ReturnValue BTree::getNextRecord(BTreeRecord& record)
+{
+	if (seqCurrPage == NIL) {
+		return ReturnValue::READ_ENDED;
+	}
+	BTreePage page = pageCache.getPage(seqCurrPage);
+	
+	record = page.getRecord(seqCurrIdx);
+	seqCurrIdx++;
+	
+	int64_t child = page.getAddress(seqCurrIdx);
+	if (child != NIL) {
+		BTreeRecord temp(INT64_MIN,0);
+		seqCurrIdx = 0;
+		search(temp, child, &seqCurrPage);
+	}
+	else if (seqCurrIdx == page.getSize()) {
+		setNextSeqRead(page.getParent(), seqCurrPage);
+	}
+
+	return ReturnValue::OK;
+}
+
 void BTree::print(std::ostream& os) {
 	if (root_addr == NIL) {
 		os << "------- B-tree empty -------\n";
